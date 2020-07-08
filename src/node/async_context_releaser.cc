@@ -28,11 +28,14 @@ void AsyncContextReleaser::Execute(Napi::Env env) {
 }
 
 AsyncContextReleaser* AsyncContextReleaser::GetDefault() {
+  static std::mutex _default_mutex{};
   if (!_default) {
+    _default_mutex.lock();
     Napi::HandleScope scope(constructor().Env());
     auto object = constructor().New({});
     _default = Unwrap(object);
     _default->Ref();
+    _default_mutex.unlock();
   }
   return _default;
 }
